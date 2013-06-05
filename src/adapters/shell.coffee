@@ -3,13 +3,29 @@ Readline = require 'readline'
 Robot         = require '../robot'
 Adapter       = require '../adapter'
 {TextMessage} = require '../message'
+exec          = require('child_process').exec
+async         = require 'async'
 
 class Shell extends Adapter
   send: (envelope, strings...) ->
     unless process.platform is 'win32'
-      console.log "\x1b[01;32m#{str}\x1b[0m" for str in strings
+     for str in strings
+      console.log "\x1b[01;32m#{str}\x1b[0m"
+      strArr = str.split(/\n/g)
+      ex = []
+      speech = (says) ->
+        return (callback) ->
+          exec('say ' + says, () -> callback())
+
+      for i in strArr by 1
+        sayString = i
+        ex.push speech(sayString)
+
+      async.series(ex)
     else
-      console.log "#{str}" for str in strings
+      for str in strings
+        console.log "#{str}"
+        exec('say #{str}')
     @repl.prompt()
 
   reply: (envelope, strings...) ->

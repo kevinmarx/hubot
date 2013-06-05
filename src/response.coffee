@@ -1,5 +1,3 @@
-exec = require('child_process').exec
-
 class Response
   # Public: Responses are sent to matching listeners. Messages know about the
   # content and user that made the original message, and how to reply back to
@@ -21,7 +19,6 @@ class Response
   #
   # Returns nothing.
   send: (strings...) ->
-    exec('say ' + strings)
     @robot.adapter.send @envelope, strings...
 
   # Public: Posts a message mentioning the current user.
@@ -31,7 +28,6 @@ class Response
   #
   # Returns nothing.
   reply: (strings...) ->
-    exec('say ' + strings)
     @robot.adapter.reply @envelope, strings...
 
   # Public: Posts a topic changing message
