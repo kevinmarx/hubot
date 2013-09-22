@@ -5,6 +5,7 @@ Adapter       = require '../adapter'
 {TextMessage} = require '../message'
 exec          = require('child_process').exec
 async         = require 'async'
+HttpClient    = require 'scoped-http-client'
 
 class Shell extends Adapter
   send: (envelope, strings...) ->
@@ -51,7 +52,17 @@ class Shell extends Adapter
       @repl.close() if buffer.toLowerCase() is 'exit'
       @repl.prompt()
       user = @robot.brain.userForId '1', name: 'Shell', room: 'Shell'
-      @receive new TextMessage user, buffer, 'messageId'
+      if buffer.replace(/^\s\s*/, '').replace(/\s\s*$/, '')
+        async.auto
+          brain: (callback) ->
+            HttpClient.create("https://api.wit.ai")
+            .header("Authorization", "Bearer DRZ2GX4X7HTGJU3Q7BZ77TNDJLL6EC7K")
+            .path("/message")
+            .query(q: buffer)
+            .get() (err, res, body) ->
+              callback err, body
+        , (err, results) =>
+          @receive new TextMessage user, results.brain, 'messageId'
 
     self.emit 'connected'
 
