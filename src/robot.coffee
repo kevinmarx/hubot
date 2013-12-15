@@ -4,11 +4,11 @@ Path           = require 'path'
 HttpClient     = require 'scoped-http-client'
 {EventEmitter} = require 'events'
 
-User                                        = require './user'
-Brain                                       = require './brain'
-Response                                    = require './response'
-{Listener,TextListener}                     = require './listener'
-{EnterMessage,LeaveMessage,CatchAllMessage} = require './message'
+User = require './user'
+Brain = require './brain'
+Response = require './response'
+{Listener,TextListener} = require './listener'
+{EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage} = require './message'
 
 HUBOT_DEFAULT_ADAPTERS = [
   'campfire'
@@ -22,7 +22,9 @@ HUBOT_DOCUMENTATION_SECTIONS = [
   'commands'
   'notes'
   'author'
+  'authors'
   'examples'
+  'tags'
   'urls'
 ]
 
@@ -38,8 +40,8 @@ class Robot
   # Returns nothing.
   constructor: (adapterPath, adapter, httpd, name = 'Hubot') ->
     @name      = name
-    @brain     = new Brain
     @events    = new EventEmitter
+    @brain     = new Brain @
     @alias     = false
     @adapter   = null
     @Response  = Response
@@ -48,7 +50,11 @@ class Robot
     @logger    = new Log process.env.HUBOT_LOG_LEVEL or 'info'
 
     @parseVersion()
-    @setupExpress() if httpd
+    if httpd
+      @setupExpress()
+    else
+      @setupNullRouter()
+    @pingIntervalId = null
     @loadAdapter adapterPath, adapter
 
   # Public: Adds a Listener that attempts to match incoming messages based on
@@ -174,7 +180,7 @@ class Robot
     if ext is '.coffee' or ext is '.js'
       try
         require(full) @
-        @parseHelp "#{path}/#{file}"
+        @parseHelp Path.join(path, file)
       catch error
         @logger.error "Unable to load #{full}: #{error.stack}"
         process.exit(1)
@@ -188,7 +194,7 @@ class Robot
     @logger.debug "Loading scripts from #{path}"
     Fs.exists path, (exists) =>
       if exists
-        for file in Fs.readdirSync(path)
+        for file in Fs.readdirSync(path).sort()
           @loadFile path, file
 
   # Public: Load scripts specfied in the `hubot-scripts.json` file.
@@ -210,13 +216,16 @@ class Robot
   # Returns nothing.
   loadExternalScripts: (packages) ->
     @logger.debug "Loading external-scripts from npm packages"
-    for pkg in packages
-      try
-        require(pkg) @
-        @parseHelp require.resolve(pkg)
-      catch error
-        @logger.error "Error loading scripts from npm package - #{error}"
-        process.exit(1)
+    try
+      if packages instanceof Array
+        for pkg in packages
+          require(pkg)(@)
+      else
+        for pkg, scripts of packages
+          require(pkg)(@, scripts)
+    catch err
+      @logger.error "Error loading scripts from npm package - #{err.stack}"
+      process.exit(1)
 
   # Setup the Express server's defaults.
   #
@@ -234,17 +243,33 @@ class Robot
     app.use express.bodyParser()
     app.use express.static stat if stat
 
-    @server = app.listen process.env.PORT || 8080
-    @router = app
+    try
+      @server = app.listen(process.env.PORT || 8080)
+      @router = app
+    catch err
+      @logger.error "Error trying to start HTTP server: #{err}\n#{err.stack}"
+      process.exit(1)
 
     herokuUrl = process.env.HEROKU_URL
 
     if herokuUrl
       herokuUrl += '/' unless /\/$/.test herokuUrl
-      setInterval =>
+      @pingIntervalId = setInterval =>
         HttpClient.create("#{herokuUrl}hubot/ping").post() (err, res, body) =>
           @logger.info 'keep alive ping!'
       , 1200000
+
+  # Setup an empty router object
+  #
+  # returns nothing
+  setupNullRouter: ->
+    msg = "A script has tried registering a HTTP route while the HTTP server is disabled with --disabled-httpd."
+    @router =
+      get: ()=> @logger.warning msg
+      post: ()=> @logger.warning msg
+      put: ()=> @logger.warning msg
+      delete: ()=> @logger.warning msg
+
 
   # Load the adapter Hubot is going to use.
   #
@@ -369,12 +394,14 @@ class Robot
   #
   # Returns nothing.
   run: ->
+    @emit "running"
     @adapter.run()
 
   # Public: Gracefully shutdown the robot process
   #
   # Returns nothing.
   shutdown: ->
+    clearInterval @pingIntervalId if @pingIntervalId?
     @adapter.close()
     @brain.close()
 
@@ -382,10 +409,8 @@ class Robot
   #
   # Returns a String of the version number.
   parseVersion: ->
-    package_path = Path.join __dirname, '..', 'package.json'
-    data = Fs.readFileSync package_path, 'utf8'
-    content = JSON.parse data
-    @version = content.version
+    pkg = require Path.join __dirname, '..', 'package.json'
+    @version = pkg.version
 
   # Public: Creates a scoped http client with chainable methods for
   # modifying the request. This doesn't actually make a request though.

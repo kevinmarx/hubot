@@ -29,6 +29,9 @@ class Shell extends Adapter
         exec('say #{str}')
     @repl.prompt()
 
+  emote: (envelope, strings...) ->
+    @send envelope, "* #{str}" for str in strings
+
   reply: (envelope, strings...) ->
     strings = strings.map (s) -> "#{envelope.user.name}: #{s}"
     @send envelope, strings...
