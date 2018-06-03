@@ -1,38 +1,27 @@
-# Hubot Adapters
+---
+permalink: /docs/adapters/
+---
+
+# Adapters
 
 Adapters are the interface to the service you want your hubot to run on.
 
-## Official Adapters
-
 Hubot includes two official adapters:
 
-* [Shell](adapters/shell.md), i.e. for use with development
-* [Campfire](adapters/campfire.md)
+* [Shell](./adapters/shell.md), i.e. for use with development
+* [Campfire](./adapters/campfire.md)
 
-## Third-party Adapters
+There are Third-party adapaters are available for most chat services. Here are the most popular ones:
 
-Third-party adapters are available as `npm` packages. Here is a list of known
-adapters, but please [submit an issue](https://github.com/github/hubot/issues)
-to have yours added to the list:
-
-* [Flowdock](https://github.com/flowdock/hubot-flowdock)
+* [Gitter](https://github.com/huafu/hubot-gitter2)
 * [HipChat](https://github.com/hipchat/hubot-hipchat)
 * [IRC](https://github.com/nandub/hubot-irc)
-* [Partychat](https://github.com/iangreenleaf/hubot-partychat-hooks)
-* [Talker](https://github.com/unixcharles/hubot-talker)
-* [Twilio](https://github.com/jkarmel/hubot-twilio)
-* [Twitter](https://github.com/MathildeLemee/hubot-twitter)
+* [Rocket.Chat](https://github.com/RocketChat/hubot-rocketchat)
+* [Slack](https://github.com/slackhq/hubot-slack)
 * [XMPP](https://github.com/markstory/hubot-xmpp)
-* [Gtalk](https://github.com/atmos/hubot-gtalk)
-* [Yammer](https://github.com/athieriot/hubot-yammer)
-* [Skype](https://github.com/netpro2k/hubot-skype)
-* [Jabbr](https://github.com/smoak/hubot-jabbr)
-* [iMessage](https://github.com/lazerwalker/hubot-imessage)
-* [Hall](https://github.com/Hall/hubot-hall)
 
+Browse all [repositories with the `hubot-adapter` topic on GitHub](https://github.com/search?q=topic%3Ahubot-adapter&type=Repositories) or [search for adapters on NPM](https://www.npmjs.com/search?q=hubot%20adapter&ranking=popularity). Add the `hubot-adapter` [topic](https://help.github.com/articles/classifying-your-repository-with-topics/) to your repository on GitHub to include it in this list.
 
-## Writing Your Own adapter
+## Writing Your Own Adapter
 
-The best place to start is `src/adapter.coffee`, and inheriting from `Adapter`.
-There is not as much documentation as could exist (yet!), so it is worth
-reviewing existing adapters as well as how hubot internally uses an adapter.
+Interested in adding your own adapter? Check out our documentation for [developing adapters](./adapters/development.md)

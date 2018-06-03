@@ -1,6 +1,10 @@
-# Deploying Hubot to Heroku
+---
+permalink: /docs/deploying/heroku/
+---
 
-If you've been following along with [Getting Started](../README.md), it's time to deploy so you can use it beyond just your local machine.
+# Deploying to Heroku
+
+If you've been following along with [Getting Started](../index.md), it's time to deploy so you can use it beyond just your local machine.
 [Heroku](http://www.heroku.com/) is an easy and supported way to deploy hubot.
 
 Install the [Heroku Toolbelt](https://toolbelt.heroku.com/) to start, then follow their 'Getting Started' instructions, including logging in the first time:
@@ -32,22 +36,9 @@ variables for hubot to use. The specific variables you'll need depends on which
 [adapter](../adapters.md) and scripts you are using. For Campfire, with no other
 scripts, you'd need to set the following environment variables:
 
-    % heroku config:add HUBOT_CAMPFIRE_ACCOUNT=yourcampfireaccount
-    % heroku config:add HUBOT_CAMPFIRE_TOKEN=yourcampfiretoken
-    % heroku config:add HUBOT_CAMPFIRE_ROOMS=comma,separated,list,of,rooms,to,join
-
-In addition, there is one special environment variable for Heroku. The default hubot
-[Procfile](https://devcenter.heroku.com/articles/procfile) marks the process as
-a 'web' process type, in order to support serving http requests (more on that
-in the [scripting docs](../scripting.md)). The downside of this is that dynos
-will [idle after an hour of inactivity](https://devcenter.heroku.com/articles/dynos#dyno-idling).
-That means your hubot would leave after an hour of idle web traffic, and only rejoin when it does get traffic. This is extremely
-inconvenient since most interaction is done through chat, and hubot has to be online and in the room to respond to messages. To get around this,
-there's a special environment variable to make hubot regularly ping itself over http. If
-the app is deployed to http://rosemary-britches-123.herokuapp.com/, you'd
-configure:
-
-    % heroku config:add HEROKU_URL=http://rosemary-britches-123.herokuapp.com
+    % heroku config:set HUBOT_CAMPFIRE_ACCOUNT=yourcampfireaccount
+    % heroku config:set HUBOT_CAMPFIRE_TOKEN=yourcampfiretoken
+    % heroku config:set HUBOT_CAMPFIRE_ROOMS=comma,separated,list,of,rooms,to,join
 
 At this point, you are ready to deploy and start chatting. With Heroku, that's a
 git push away:
@@ -65,7 +56,11 @@ before:
 
     % git commit -am "Awesome scripts OMG"
     % git push heroku master
-    
-Some scripts needs Redis to work, Heroku offers an addon called [RedisToGo](https://addons.heroku.com/RedisToGo), which has a free nano plan. To use it:
 
-    % heroku addons:add redistogo:nano
+Some scripts needs Redis to work, Heroku offers an addon called [Redis Cloud](https://addons.heroku.com/rediscloud), which has a free plan. To use it:
+
+    % heroku addons:create rediscloud
+
+Note: the free redis plans don't offer any persistence so your hubot will lose all the information when it goes to sleep.
+
+Free dynos on Heroku will [sleep after 30 minutes of inactivity](https://devcenter.heroku.com/articles/dyno-sleeping). That means your hubot would leave the chat room and only rejoin when it does get traffic. This is extremely inconvenient since most interaction is done through chat, and hubot has to be online and in the room to respond to messages. To get around this, you can use the [hubot-heroku-keepalive](https://github.com/hubot-scripts/hubot-heroku-keepalive) script, which will keep your free dyno alive for up to 18 hours/day. If you never want Hubot to sleep, you will need to [upgrade to Heroku's hobby plan](https://www.heroku.com/pricing).

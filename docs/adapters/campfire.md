@@ -1,4 +1,8 @@
-# Adapter: Campfire
+---
+permalink: /docs/adapters/campfire/
+---
+
+# Campfire adapter
 
 [Campfire](http://campfirenow.com/) is a web based chat application built by
 [37signals](http://37signals.com). The Campfire adapter is one of the original
@@ -13,7 +17,7 @@ Next, you will need to create a user on your Campfire account for your Hubot,
 then give it access so it can join to your rooms. You will need to create a room
 if you haven't already.
 
-Hubot defaults to using its [shell](shell.md), so to use Campfire instead, you
+Hubot defaults to using its [shell](./shell.md), so to use Campfire instead, you
 can run hubot with `-a campfire`:
 
     % bin/hubot -a campfire
@@ -50,11 +54,11 @@ subdomain is `hubot`. Make a note of the subdomain.
 
 ### Configuring the variables on Heroku
 
-    % heroku config:add HUBOT_CAMPFIRE_TOKEN="..."
+    % heroku config:set HUBOT_CAMPFIRE_TOKEN="..."
 
-    % heroku config:add HUBOT_CAMPFIRE_ROOMS="123,321"
+    % heroku config:set HUBOT_CAMPFIRE_ROOMS="123,321"
 
-    % heroku config:add HUBOT_CAMPFIRE_ACCOUNT="..."
+    % heroku config:set HUBOT_CAMPFIRE_ACCOUNT="..."
 
 ### Configuring the variables on UNIX
 
@@ -70,6 +74,6 @@ Using PowerShell:
 
     setx HUBOT_CAMPFIRE_TOKEN "..." /m
 
-    setx HUBOT_CAMPFIRE_ROOMS "123,321" /m 
+    setx HUBOT_CAMPFIRE_ROOMS "123,321" /m
 
     setx HUBOT_CAMPFIRE_ACCOUNT "..." /m
